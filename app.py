@@ -1,5 +1,3 @@
-
-import streamlit as st
 import streamlit as st
 
 # ===================== TÍTULO Y DESCRIPCIÓN =====================
@@ -20,20 +18,4 @@ Los tres modelos con mejor rendimiento fueron:
 - 🌲 **Random Forest Regressor**
 - 🧮 **Kernel Ridge Regressor**
 - 🌐 **Gaussian Process Regressor**
-""")
-
-# Título
-st.title("🏠 Dashboard de Predicción de Precios de Vivienda")
-
-# Subtítulo
-st.subheader("Proyecto de Machine Learning con el dataset Ames Housing")
-
-# Texto de bienvenida
-st.write("""
-Bienvenido al dashboard interactivo del proyecto.
-Aquí podrás:
-- Explorar los datos del conjunto Ames Housing.
-- Visualizar estadísticas y gráficos.
-- Consultar los mejores modelos entrenados.
-- Realizar predicciones personalizadas.
 """)
