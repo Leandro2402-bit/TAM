@@ -112,4 +112,6 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 
 
 
+
+
     
