@@ -80,5 +80,35 @@ st.dataframe(df_metricas.style.format({
     "R²": "{:.4f}"
 }))
 
+# ===================== MÉTRICAS DE EVALUACIÓN =====================
+
+# Subtítulo para la nueva sección
+st.subheader("📏 ¿Qué significan las métricas de evaluación?")
+
+# Texto explicativo con Markdown
+st.markdown("""
+Para evaluar la calidad de los modelos de regresión, se usan estas tres métricas principales:
+
+### 🔢 MAE – Error Absoluto Medio (Mean Absolute Error)
+- Mide el **promedio de los errores absolutos** entre los precios reales y los predichos.
+- **Fácil de interpretar**: un MAE de `15,000` indica un error promedio de $15,000.
+- **No penaliza demasiado los errores grandes**.
+
+### 🔢 RMSE – Raíz del Error Cuadrático Medio (Root Mean Squared Error)
+- Calcula la **raíz cuadrada del promedio de los errores al cuadrado**.
+- Penaliza más los **errores grandes** que el MAE.
+- Si el RMSE es `23,000`, en promedio el error es de unos $23,000, con énfasis en errores grandes.
+
+### 📈 R² – Coeficiente de Determinación
+- Mide cuánta **proporción de la variación del precio** puede explicar el modelo.
+- R² = `1.0` → Predicción perfecta.
+- R² = `0.0` → No es mejor que predecir el promedio.
+- R² < 0 → El modelo es peor que adivinar el valor medio.
+
+---
+Estas métricas te ayudan a entender si el modelo predice bien y en qué magnitud se equivoca.
+""")
+
+
 
 
