@@ -159,11 +159,11 @@ YearBuilt = st.number_input("Año de construcción (Year Built)", min_value=1870
 
 # Creamos un DataFrame con los datos ingresados
 input_data = pd.DataFrame({
-    "Gr Liv Area": [Gr Liv Area],
-    "Over all Qual": [Over all Qual],
-    "Garage Cars": [Garage Cars],
-    "Total Bsmt SF": [Total Bsmt SF],
-    "YearBuilt": [Year Built]
+    "Gr Liv Area": [GrLivArea],
+    "Over all Qual": [OverallQual],
+    "Garage Cars": [GarageCars],
+    "Total Bsmt SF": [TotalBsmtSF],
+    "YearBuilt": [YearBuilt]
 })
 
 # Realizamos la predicción cuando el usuario presiona el botón
@@ -176,7 +176,6 @@ if st.button("🔮 Predecir Precio"):
     except Exception as e:
         st.error("❌ Error al realizar la predicción.")
         st.exception(e)
-
 
 
     
