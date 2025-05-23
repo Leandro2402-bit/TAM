@@ -158,8 +158,7 @@ model_rf = joblib.load(output_path)
 st.success("✅ Modelo Random Forest cargado exitosamente.")
 
 # ===============================================
-#  DESCARGA Y CARGA DEL MODELO ENTRENADO
-# ===============================================
+# DESCARGA Y CARGA DEL MODELO RANDOM FOREST =====
 
 import gdown  # Librería para descargar archivos de Google Drive
 import joblib  # Librería para cargar el modelo .pkl
@@ -175,26 +174,26 @@ output_file = "random_forest_model.pkl"
 model = None
 
 try:
-    # Descargamos el archivo desde Google Drive usando gdown
-    gdown.download(f"https://drive.google.com/uc?id={file_id}", output_file, quiet=False)
+    # Solo descarga si el archivo no existe
+    if not os.path.exists(output_file):
+        with st.spinner("🔽 Descargando modelo Random Forest desde Google Drive..."):
+            gdown.download(f"https://drive.google.com/uc?id={file_id}", output_file, quiet=False)
 
-    # Verificamos que el archivo se haya descargado exitosamente
+    # Verificamos que el archivo se haya descargado correctamente
     if os.path.exists(output_file):
         # Cargamos el modelo desde el archivo .pkl
         model = joblib.load(output_file)
-        st.success("✅ Modelo RandomForest cargado exitosamente.")
+        st.success("✅ Modelo Random Forest cargado exitosamente.")
     else:
-        # Si no se descargó correctamente
-        st.error("❌ El archivo del modelo no se descargó correctamente.")
+        st.error("❌ No se encontró el archivo del modelo.")
 except Exception as e:
-    # Captura errores de descarga o carga
     st.error(f"⚠️ Error al cargar el modelo: {e}")
 
-# Verificamos que el modelo esté cargado antes de usarlo
+# Verificación final del modelo
 if model is not None:
-    # Aquí iría tu lógica para predicción, visualización, etc.
     st.info("📊 El modelo está listo para realizar predicciones.")
 else:
     st.warning("🚫 No se cargó ningún modelo. Asegúrate de tener conexión o revisa el enlace.")
+
 
 
