@@ -123,8 +123,8 @@ st.header("🎯 Predicción Interactiva de Precio de Vivienda")
 
 # Diccionario con las URLs públicas de Google Drive para descargar los modelos
 model_urls = {
-    "Random Forest": "https://drive.google.com/uc?id=1y992YhEfjkipa8tI0A-MMxegvPaEBHZR",
-    "Kernel Ridge": "https://drive.google.com/uc?id=1txUpSg0meC7-o6ABkQAYCaSOCMXo2Sm0"
+    "Random Forest": "https://drive.google.com/uc?id="1LeP3SVUrhCVuDK7xI4tXETNI4P-sxS3X"
+    "Kernel Ridge": "https://drive.google.com/uc?id="1vIBuqXjapkETA9AjvedRT0aH1Rb5S72J"
 }
 
 # Diccionario donde se almacenarán los modelos cargados
@@ -151,19 +151,19 @@ modelo = loaded_models[model_name]
 st.markdown("### ✍️ Ingresa los datos de la vivienda")
 
 # Elegimos algunas de las variables más relevantes según la correlación
-GrLivArea = st.number_input("Área habitable sobre el suelo (GrLivArea)", min_value=300, max_value=6000, value=1500)
-OverallQual = st.slider("Calidad general del material y acabado (OverallQual)", 1, 10, 5)
-GarageCars = st.slider("Cantidad de espacios en garaje (GarageCars)", 0, 5, 2)
-TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
-YearBuilt = st.number_input("Año de construcción (YearBuilt)", min_value=1870, max_value=2023, value=2000)
+GrLivArea = st.number_input("Área habitable sobre el suelo (Gr Liv Area)", min_value=300, max_value=6000, value=1500)
+OverallQual = st.slider("Calidad general del material y acabado (Over all Qual)", 1, 10, 5)
+GarageCars = st.slider("Cantidad de espacios en garaje (Garage Cars)", 0, 5, 2)
+TotalBsmtSF = st.number_input("Área total del sótano (Total Bsmt SF)", min_value=0, max_value=3000, value=800)
+YearBuilt = st.number_input("Año de construcción (Year Built)", min_value=1870, max_value=2023, value=2000)
 
 # Creamos un DataFrame con los datos ingresados
 input_data = pd.DataFrame({
-    "GrLivArea": [GrLivArea],
-    "OverallQual": [OverallQual],
-    "GarageCars": [GarageCars],
-    "TotalBsmtSF": [TotalBsmtSF],
-    "YearBuilt": [YearBuilt]
+    "GrLivArea": [Gr Liv Area],
+    "OverallQual": [Over all Qual],
+    "GarageCars": [Garage Cars],
+    "TotalBsmtSF": [Total Bsmt SF],
+    "YearBuilt": [Year Built]
 })
 
 # Realizamos la predicción cuando el usuario presiona el botón
