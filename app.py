@@ -109,6 +109,73 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
+# ===================== PREDICCIÓN INTERACTIVA =====================
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+import gdown
+import os
+
+# Subtítulo de la sección
+st.header("🎯 Predicción Interactiva de Precio de Vivienda")
+
+# Diccionario con las URLs públicas de Google Drive para descargar los modelos
+model_urls = {
+    "Random Forest": "https://drive.google.com/uc?id=1y992YhEfjkipa8tI0A-MMxegvPaEBHZR",
+    "Kernel Ridge": "https://drive.google.com/uc?id=1txUpSg0meC7-o6ABkQAYCaSOCMXo2Sm0"
+}
+
+# Diccionario donde se almacenarán los modelos cargados
+loaded_models = {}
+
+# Descargar y cargar los modelos si no existen localmente
+for name, url in model_urls.items():
+    filename = f"{name.replace(' ', '_')}.pkl"
+    if not os.path.exists(filename):
+        gdown.download(url, filename, quiet=False)
+    try:
+        loaded_models[name] = joblib.load(filename)
+    except Exception as e:
+        st.error(f"❌ No se pudo cargar el modelo {name}.")
+        st.exception(e)
+
+# Mostrar un selectbox para que el usuario elija el modelo
+model_name = st.selectbox("📌 Selecciona el modelo para predecir:", list(loaded_models.keys()))
+
+# Obtener el modelo seleccionado
+modelo = loaded_models[model_name]
+
+# Mostrar las variables necesarias para la predicción
+st.markdown("### ✍️ Ingresa los datos de la vivienda")
+
+# Elegimos algunas de las variables más relevantes según la correlación
+GrLivArea = st.number_input("Área habitable sobre el suelo (GrLivArea)", min_value=300, max_value=6000, value=1500)
+OverallQual = st.slider("Calidad general del material y acabado (OverallQual)", 1, 10, 5)
+GarageCars = st.slider("Cantidad de espacios en garaje (GarageCars)", 0, 5, 2)
+TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
+YearBuilt = st.number_input("Año de construcción (YearBuilt)", min_value=1870, max_value=2023, value=2000)
+
+# Creamos un DataFrame con los datos ingresados
+input_data = pd.DataFrame({
+    "GrLivArea": [GrLivArea],
+    "OverallQual": [OverallQual],
+    "GarageCars": [GarageCars],
+    "TotalBsmtSF": [TotalBsmtSF],
+    "YearBuilt": [YearBuilt]
+})
+
+# Realizamos la predicción cuando el usuario presiona el botón
+if st.button("🔮 Predecir Precio"):
+    try:
+        # Predecimos con el modelo seleccionado
+        predicted_price = modelo.predict(input_data)[0]
+        # Mostramos el resultado formateado como dinero
+        st.success(f"💰 Precio estimado de la vivienda: *${predicted_price:,.0f}*")
+    except Exception as e:
+        st.error("❌ Error al realizar la predicción.")
+        st.exception(e)
 
 
 
