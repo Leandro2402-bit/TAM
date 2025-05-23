@@ -151,11 +151,11 @@ modelo = loaded_models[model_name]
 st.markdown("### ✍️ Ingresa los datos de la vivienda")
 
 # Elegimos algunas de las variables más relevantes según la correlación
-Gr Liv Area = st.number_input("Área habitable sobre el suelo (Gr Liv Area)", min_value=300, max_value=6000, value=1500)
-Over all Qual = st.slider("Calidad general del material y acabado (Over all Qual)", 1, 10, 5)
-Garage Cars = st.slider("Cantidad de espacios en garaje (Garage Cars)", 0, 5, 2)
-Tota lBsmt SF = st.number_input("Área total del sótano (Total Bsmt SF)", min_value=0, max_value=3000, value=800)
-Year Built = st.number_input("Año de construcción (Year Built)", min_value=1870, max_value=2023, value=2000)
+GrLivArea = st.number_input("Área habitable sobre el suelo (Gr Liv Area)", min_value=300, max_value=6000, value=1500)
+OverallQual = st.slider("Calidad general del material y acabado (Over all Qual)", 1, 10, 5)
+GarageCars = st.slider("Cantidad de espacios en garaje (Garage Cars)", 0, 5, 2)
+TotalBsmtSF = st.number_input("Área total del sótano (Total Bsmt SF)", min_value=0, max_value=3000, value=800)
+YearBuilt = st.number_input("Año de construcción (Year Built)", min_value=1870, max_value=2023, value=2000)
 
 # Creamos un DataFrame con los datos ingresados
 input_data = pd.DataFrame({
