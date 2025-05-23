@@ -109,5 +109,31 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
+# ================== CARGA DEL MODELO RANDOM FOREST DESDE GOOGLE DRIVE ==================
+import os                 # Para verificar si el archivo ya existe
+import gdown              # Para descargar desde Google Drive
+import joblib             # Para cargar el modelo .pkl
+import streamlit as st    # Para mensajes visuales en la app
+
+# ID de tu archivo en Google Drive
+file_id = '1y992YhEfjkipa8tI0A-MMxegvPaEBHZR'
+
+# Construimos la URL de descarga directa desde Google Drive
+url = f'https://drive.google.com/uc?id={file_id}'
+
+# Nombre del archivo que tendrá localmente en la app
+output_path = 'random_forest_model.pkl'
+
+# Si el archivo aún no existe, lo descargamos
+if not os.path.exists(output_path):
+    with st.spinner('🔽 Descargando modelo Random Forest desde Google Drive...'):
+        gdown.download(url, output_path, quiet=False)  # Descarga el archivo
+
+# Cargamos el modelo una vez descargado
+model_rf = joblib.load(output_path)
+
+# Mostramos mensaje de éxito en la interfaz de Streamlit
+st.success("✅ Modelo Random Forest cargado exitosamente.")
+
 
 
