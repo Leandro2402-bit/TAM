@@ -192,7 +192,49 @@ except Exception as e:
 # Verificación final del modelo
 if model is not None:
     st.info("📊 El modelo está listo para realizar predicciones.")
+        # ==============================
+    # 📝 FORMULARIO DE ENTRADA
+    # ==============================
 
+    st.subheader("🔍 Ingresa los datos de la vivienda para predecir el precio")
 
+    # Creamos columnas para una mejor disposición en pantalla
+    col1, col2 = st.columns(2)
+
+    # Variables numéricas típicas
+    with col1:
+        OverallQual = st.slider("Calidad general (OverallQual)", 1, 10, 5)
+        GrLivArea = st.number_input("Área habitable (GrLivArea)", min_value=100, max_value=6000, value=1500)
+        GarageCars = st.slider("Número de autos en garaje (GarageCars)", 0, 4, 2)
+        GarageArea = st.number_input("Área del garaje (GarageArea)", min_value=0, max_value=1500, value=500)
+
+    with col2:
+        TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
+        FullBath = st.slider("Baños completos (FullBath)", 0, 4, 2)
+        YearBuilt = st.slider("Año de construcción (YearBuilt)", 1870, 2020, 1990)
+        YearRemodAdd = st.slider("Año de remodelación (YearRemodAdd)", 1950, 2020, 2005)
+
+    # ==============================
+    # 🔮 PREDICCIÓN
+    # ==============================
+
+    if st.button("Predecir Precio"):
+        # Creamos un DataFrame con los valores de entrada
+        input_data = pd.DataFrame([{
+            "OverallQual": OverallQual,
+            "GrLivArea": GrLivArea,
+            "GarageCars": GarageCars,
+            "GarageArea": GarageArea,
+            "TotalBsmtSF": TotalBsmtSF,
+            "FullBath": FullBath,
+            "YearBuilt": YearBuilt,
+            "YearRemodAdd": YearRemodAdd
+        }])
+
+        # Usamos el modelo para predecir el precio
+        predicted_price = model.predict(input_data)[0]
+
+        # Mostramos el resultado
+        st.success(f"💰 Precio estimado de la vivienda: **${predicted_price:,.0f}**")
 
 
