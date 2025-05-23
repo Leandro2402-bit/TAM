@@ -135,5 +135,26 @@ model_rf = joblib.load(output_path)
 # Mostramos mensaje de éxito en la interfaz de Streamlit
 st.success("✅ Modelo Random Forest cargado exitosamente.")
 
+# ================== CARGA DEL MODELO RANDOM FOREST DESDE GOOGLE DRIVE ==================
+import os
+import gdown
+import joblib
+
+# ID de tu archivo en Google Drive (ajusta esto con tu ID real)
+file_id = '1ABCdEFghIJklmnOPqrSTUvWxyz'  # 👈 Reemplaza esto con tu ID real
+
+# Construimos la URL directa de descarga
+url = f'https://drive.google.com/uc?id={file_id}'
+output_path = 'random_forest_model.pkl'
+
+# Si el archivo aún no está en el entorno, lo descargamos
+if not os.path.exists(output_path):
+    with st.spinner('Descargando modelo Random Forest desde Google Drive...'):
+        gdown.download(url, output_path, quiet=False)
+
+# Cargamos el modelo ya descargado
+model_rf = joblib.load(output_path)
+
+st.success("✅ Modelo Random Forest cargado exitosamente.")
 
 
