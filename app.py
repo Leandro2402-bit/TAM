@@ -109,6 +109,40 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
+# ===================== COMPARACIÓN DE MODELOS =====================
+
+# Título de la sección
+st.header("📊 Comparación de Modelos de Regresión")
+
+# Explicación
+st.markdown("""
+A continuación se presentan las métricas de desempeño para los tres modelos con mejor rendimiento.
+Las métricas utilizadas son:
+
+- **MAE**: Error absoluto medio.
+- **RMSE**: Raíz del error cuadrático medio.
+- **R²**: Coeficiente de determinación.
+""")
+
+# Crear diccionario con resultados
+resultados_modelos = {
+    "Modelo": ["Random Forest", "Kernel Ridge", "Gaussian Process"],
+    "MAE": [17752.85, 19423.65, 21034.21],
+    "RMSE": [25744.10, 27118.49, 28956.97],
+    "R²": [0.9125, 0.9012, 0.8873]
+}
+
+# Convertir a DataFrame
+import pandas as pd
+df_resultados = pd.DataFrame(resultados_modelos)
+
+# Mostrar la tabla en el dashboard
+st.dataframe(df_resultados.style.format({
+    "MAE": "{:,.2f}",
+    "RMSE": "{:,.2f}",
+    "R²": "{:.4f}"
+}))
+
 
 
 
