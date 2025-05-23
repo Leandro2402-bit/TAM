@@ -215,36 +215,48 @@ if model is not None:
         YearRemodAdd = st.slider("Año de remodelación (YearRemodAdd)", 1950, 2020, 2005)
 
     # ==============================
-    # 🔮 PREDICCIÓN
+    # 🔮 PREDICCIÓN (versión simple)
     # ==============================
 
-    # 👇 NUEVO BLOQUE PARA DEPURAR COLUMNAS FALTANTES
-    if st.checkbox("Mostrar columnas requeridas por el modelo"):
-        try:
-            st.write("📦 Columnas requeridas por el modelo:")
-            st.write(list(model.feature_names_in_))
-        except Exception as e:
-            st.error("No se pudieron obtener las columnas del modelo.")
-            st.exception(e)
-
     if st.button("Predecir Precio"):
-        # Creamos un DataFrame con los valores de entrada
-        input_data = pd.DataFrame([{
-            "OverallQual": OverallQual,
-            "GrLivArea": GrLivArea,
-            "GarageCars": GarageCars,
-            "GarageArea": GarageArea,
-            "TotalBsmtSF": TotalBsmtSF,
-            "FullBath": FullBath,
-            "YearBuilt": YearBuilt,
-            "YearRemodAdd": YearRemodAdd
-        }])
+        # Lista completa de columnas que espera el modelo
+        columnas_modelo = [
+            "Order", "PID", "MS SubClass", "MS Zoning", "Lot Frontage", "Lot Area", "Street", "Alley", "Lot Shape",
+            "Land Contour", "Utilities", "Lot Config", "Land Slope", "Neighborhood", "Condition 1", "Condition 2",
+            "Bldg Type", "House Style", "Overall Qual", "Overall Cond", "Year Built", "Year Remod/Add", "Roof Style",
+            "Roof Matl", "Exterior 1st", "Exterior 2nd", "Mas Vnr Type", "Mas Vnr Area", "Exter Qual", "Exter Cond",
+            "Foundation", "Bsmt Qual", "Bsmt Cond", "Bsmt Exposure", "BsmtFin Type 1", "BsmtFin SF 1", "BsmtFin Type 2",
+            "BsmtFin SF 2", "Bsmt Unf SF", "Total Bsmt SF", "Heating", "Heating QC", "Central Air", "Electrical",
+            "1st Flr SF", "2nd Flr SF", "Low Qual Fin SF", "Gr Liv Area", "Bsmt Full Bath", "Bsmt Half Bath", "Full Bath",
+            "Half Bath", "Bedroom AbvGr", "Kitchen AbvGr", "Kitchen Qual", "TotRms AbvGrd", "Functional", "Fireplaces",
+            "Fireplace Qu", "Garage Type", "Garage Yr Blt", "Garage Finish", "Garage Cars", "Garage Area", "Garage Qual",
+            "Garage Cond", "Paved Drive", "Wood Deck SF", "Open Porch SF", "Enclosed Porch", "3Ssn Porch",
+            "Screen Porch", "Pool Area", "Pool QC", "Fence", "Misc Feature", "Misc Val", "Mo Sold", "Yr Sold",
+            "Sale Type", "Sale Condition"
+        ]
 
-        # Usamos el modelo para predecir el precio
+        # Creamos un diccionario base con ceros
+        datos_defecto = {col: 0 for col in columnas_modelo}
+
+        # Reemplazamos con los valores que el usuario realmente ingresó
+        datos_defecto.update({
+            "Overall Qual": OverallQual,
+            "Gr Liv Area": GrLivArea,
+            "Garage Cars": GarageCars,
+            "Garage Area": GarageArea,
+            "Total Bsmt SF": TotalBsmtSF,
+            "Full Bath": FullBath,
+            "Year Built": YearBuilt,
+            "Year Remod/Add": YearRemodAdd
+        })
+
+        # Creamos el DataFrame con los datos actualizados
+        input_data = pd.DataFrame([datos_defecto])
+
+        # Realizamos la predicción
         predicted_price = model.predict(input_data)[0]
 
         # Mostramos el resultado
         st.success(f"💰 Precio estimado de la vivienda: **${predicted_price:,.0f}**")
 
-
-
+    
