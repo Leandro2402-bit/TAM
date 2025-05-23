@@ -106,8 +106,7 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 - R² < 0 → El modelo es peor que adivinar el valor medio.
 
 ---
-Estas métricas te ayudan a entender si el modelo predice bien y en qué magnitud se equivoca.
-""")
+
 
 
 
