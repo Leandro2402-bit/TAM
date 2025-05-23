@@ -110,30 +110,6 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 """)
 
 # ================== CARGAR LOS MODELOS DESDE GOOGLE DRIVE ==================
-import gdown
-import os
-import joblib
-
-# Crear carpeta de modelos si no existe
-os.makedirs("models", exist_ok=True)
-
-# Diccionario con los nombres de archivo y sus enlaces de Drive
-modelos = {
-    "random_forest_model.pkl": "https://drive.google.com/uc?id=1y992YhEfjkipa8tI0A-MMxegvPaEBHZR",
-    "kernel_ridge_model.pkl": "https://drive.google.com/uc?id=1txUpSg0meC7-o6ABkQAYCaSOCMXo2Sm0",
-    "gaussian_process_model.pkl": "https://drive.google.com/uc?id=1rJqTDNebuv6fOnECRSI_jF4XrdvSr2Nj",
-}
-
-# Descargar y cargar modelos
-loaded_models = {}
-for filename, url in modelos.items():
-    path = f"models/{filename}"
-    if not os.path.exists(path):
-        gdown.download(url, path, quiet=False)
-    loaded_models[filename] = joblib.load(path)
-
-# Seleccionar uno como modelo por defecto
-model = loaded_models["random_forest_model.pkl"]
 
 
 
