@@ -218,13 +218,14 @@ if model is not None:
     # 🔮 PREDICCIÓN
     # ==============================
 
+    # 👇 NUEVO BLOQUE PARA DEPURAR COLUMNAS FALTANTES
     if st.checkbox("Mostrar columnas requeridas por el modelo"):
-    try:
-        st.write("📦 Columnas requeridas por el modelo:")
-        st.write(list(model.feature_names_in_))
-    except Exception as e:
-        st.error("No se pudieron obtener las columnas del modelo.")
-        st.exception(e)
+        try:
+            st.write("📦 Columnas requeridas por el modelo:")
+            st.write(list(model.feature_names_in_))
+        except Exception as e:
+            st.error("No se pudieron obtener las columnas del modelo.")
+            st.exception(e)
 
     if st.button("Predecir Precio"):
         # Creamos un DataFrame con los valores de entrada
@@ -244,5 +245,6 @@ if model is not None:
 
         # Mostramos el resultado
         st.success(f"💰 Precio estimado de la vivienda: **${predicted_price:,.0f}**")
+
 
 
