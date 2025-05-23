@@ -105,7 +105,6 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 - R² = `0.0` → No es mejor que predecir el promedio.
 - R² < 0 → El modelo es peor que adivinar el valor medio.
 
----
 
 
 
