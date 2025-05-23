@@ -157,45 +157,44 @@ model_rf = joblib.load(output_path)
 
 st.success("✅ Modelo Random Forest cargado exitosamente.")
 
-# ======================= PREDICCIÓN PERSONALIZADA =======================
+# ===============================================
+#  DESCARGA Y CARGA DEL MODELO ENTRENADO
+# ===============================================
 
-import pandas as pd
+import gdown  # Librería para descargar archivos de Google Drive
+import joblib  # Librería para cargar el modelo .pkl
+import os      # Librería para verificar existencia del archivo
 
-st.header("🔮 Predicción personalizada del precio de una vivienda")
+# ID del archivo compartido en Google Drive (modelo entrenado)
+file_id = "1y992YhEfjkipa8tI0A-MMxegvPaEBHZR"
 
-# Mostramos solo si el modelo se cargó bien
+# Nombre con el que se guardará el archivo descargado localmente
+output_file = "random_forest_model.pkl"
+
+# Definimos la variable del modelo como None por defecto
+model = None
+
+try:
+    # Descargamos el archivo desde Google Drive usando gdown
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", output_file, quiet=False)
+
+    # Verificamos que el archivo se haya descargado exitosamente
+    if os.path.exists(output_file):
+        # Cargamos el modelo desde el archivo .pkl
+        model = joblib.load(output_file)
+        st.success("✅ Modelo RandomForest cargado exitosamente.")
+    else:
+        # Si no se descargó correctamente
+        st.error("❌ El archivo del modelo no se descargó correctamente.")
+except Exception as e:
+    # Captura errores de descarga o carga
+    st.error(f"⚠️ Error al cargar el modelo: {e}")
+
+# Verificamos que el modelo esté cargado antes de usarlo
 if model is not None:
-    st.markdown("Ingresa las características de la vivienda:")
-
-    # ====== Entradas interactivas ======
-    overall_qual = st.slider("Calidad general de la casa (1 - 10)", 1, 10, 5)
-    gr_liv_area = st.slider("Área habitable sobre nivel (pies²)", 500, 4000, 1500)
-    garage_cars = st.slider("Capacidad del garaje (número de autos)", 0, 4, 2)
-    total_bsmt_sf = st.slider("Área total del sótano (pies²)", 0, 3000, 800)
-    first_flr_sf = st.slider("Área del primer piso (pies²)", 300, 3000, 1000)
-    year_built = st.slider("Año de construcción", 1870, 2010, 1980)
-    full_bath = st.slider("Número de baños completos", 0, 4, 2)
-    tot_rms_abv_grd = st.slider("Total de habitaciones sobre nivel", 2, 14, 6)
-
-    # ====== Botón para predecir ======
-    if st.button("Predecir precio"):
-        # Creamos un DataFrame con las entradas del usuario
-        user_input = pd.DataFrame([{
-            'OverallQual': overall_qual,
-            'GrLivArea': gr_liv_area,
-            'GarageCars': garage_cars,
-            'TotalBsmtSF': total_bsmt_sf,
-            '1stFlrSF': first_flr_sf,
-            'YearBuilt': year_built,
-            'FullBath': full_bath,
-            'TotRmsAbvGrd': tot_rms_abv_grd
-        }])
-
-        # Usamos el modelo para predecir
-        pred_price = model.predict(user_input)[0]
-
-        # Mostramos resultado
-        st.success(f"🏷️ Precio estimado de la vivienda: **${int(pred_price):,} USD**")
+    # Aquí iría tu lógica para predicción, visualización, etc.
+    st.info("📊 El modelo está listo para realizar predicciones.")
 else:
-    st.warning("El modelo no está disponible. Asegúrate de que se haya cargado correctamente.")
+    st.warning("🚫 No se cargó ningún modelo. Asegúrate de tener conexión o revisa el enlace.")
+
 
