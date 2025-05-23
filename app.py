@@ -192,6 +192,42 @@ except Exception as e:
 # Verificación final del modelo
 if model is not None:
     st.info("📊 El modelo está listo para realizar predicciones.")
+    # ===================== PREDICCIÓN INTERACTIVA =====================
+st.header("🔮 Predicción Interactiva de Precio de Vivienda")
+
+# Lista de características usadas por el modelo
+# Asegúrate de que estas coincidan con las columnas usadas al entrenar tu modelo
+features = ['GrLivArea', 'OverallQual', 'YearBuilt', 'GarageCars', 'TotalBsmtSF']
+
+# Creamos entradas interactivas para el usuario
+st.markdown("Introduce las características de la vivienda:")
+
+# Diccionario para guardar los valores ingresados
+inputs = {}
+for feature in features:
+    # Asigna un valor por defecto según la variable
+    if feature == 'GrLivArea':
+        inputs[feature] = st.number_input('Área habitable sobre el suelo (GrLivArea)', min_value=300, max_value=6000, value=1500)
+    elif feature == 'OverallQual':
+        inputs[feature] = st.slider('Calidad general de la vivienda (OverallQual)', 1, 10, 5)
+    elif feature == 'YearBuilt':
+        inputs[feature] = st.slider('Año de construcción (YearBuilt)', 1870, 2024, 1990)
+    elif feature == 'GarageCars':
+        inputs[feature] = st.slider('Cantidad de autos en el garaje (GarageCars)', 0, 5, 2)
+    elif feature == 'TotalBsmtSF':
+        inputs[feature] = st.number_input('Área total del sótano (TotalBsmtSF)', min_value=0, max_value=3000, value=800)
+
+# Botón para ejecutar la predicción
+if st.button("🎯 Predecir Precio"):
+    # Convertimos el diccionario de inputs a un DataFrame
+    input_df = pd.DataFrame([inputs])
+
+    # Hacemos la predicción
+    prediccion = model.predict(input_df)[0]
+
+    # Mostramos el resultado
+    st.success(f"💰 Precio estimado de la vivienda: **${prediccion:,.0f}**")
+
 else:
     st.warning("🚫 No se cargó ningún modelo. Asegúrate de tener conexión o revisa el enlace.")
 
