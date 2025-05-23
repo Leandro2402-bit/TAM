@@ -179,6 +179,4 @@ if st.button("🔮 Predecir Precio"):
 
 
 
-
-
     
