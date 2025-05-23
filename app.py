@@ -54,4 +54,31 @@ st.markdown("### Variables Más Correlacionadas con el Precio")
 top_corr = corr['SalePrice'].drop('SalePrice').abs().sort_values(ascending=False).head(10)
 st.bar_chart(top_corr)
 
+# ===================== COMPARACIÓN DE MODELOS =====================
+
+# Importar pandas para crear tablas
+import pandas as pd
+
+# Mostrar título de la sección
+st.header("📊 Comparación de Modelos de Regresión")
+
+# Crear un diccionario con las métricas de cada modelo (extraídas de tus tablas comparativas)
+metricas_modelos = {
+    "Modelo": ["Random Forest", "Kernel Ridge", "Gaussian Process"],
+    "MAE": [15112.41, 16985.84, 16312.68],          # Error absoluto medio
+    "RMSE": [23479.05, 24523.56, 24015.44],         # Raíz del error cuadrático medio
+    "R²": [0.9292, 0.9221, 0.9256]                  # Coeficiente de determinación
+}
+
+# Convertir el diccionario en un DataFrame de pandas
+df_metricas = pd.DataFrame(metricas_modelos)
+
+# Mostrar la tabla de métricas en el dashboard
+st.dataframe(df_metricas.style.format({
+    "MAE": "{:,.2f}",
+    "RMSE": "{:,.2f}",
+    "R²": "{:.4f}"
+}))
+
+
 
