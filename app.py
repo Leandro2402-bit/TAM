@@ -111,69 +111,62 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 
 # ===================== Prediccion interactiva =====================
 import streamlit as st
+
+# ✅ Esta línea DEBE ser la primera después de importar Streamlit
 st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
 
 import pandas as pd
 import numpy as np
 import joblib
-import os
 import gdown
+import os
 
-st.title("🏠 Predicción de precios de vivienda - AmesHousing")
+# --- URLS de los modelos en Drive ---
+urls = {
+    "Random Forest": "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35",
+    "Kernel Ridge": "https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm"
+}
 
-# --- Enlaces de Drive ---
-url_rf = "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35"
-url_kr = "https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm"
+# --- Cargar el modelo si no está en disco ---
+def load_model(model_name, url):
+    filename = f"{model_name.replace(' ', '_')}.pkl"
+    if not os.path.exists(filename):
+        gdown.download(url, filename, quiet=False)
+    return joblib.load(filename)
 
-# --- Descargar modelos si no existen ---
-if not os.path.exists("Random_Forest.pkl"):
-    with st.spinner("Descargando modelo Random Forest..."):
-        gdown.download(url_rf, "Random_Forest.pkl", quiet=False)
+# --- Título de la app ---
+st.title("🏡 Predicción del Precio de Vivienda - AmesHousing")
 
-if not os.path.exists("Kernel_Ridge.pkl"):
-    with st.spinner("Descargando modelo Kernel Ridge..."):
-        gdown.download(url_kr, "Kernel_Ridge.pkl", quiet=False)
+# --- Selección del modelo ---
+modelo_seleccionado = st.selectbox("Selecciona un modelo para predecir:", list(urls.keys()))
 
-# --- Cargar modelos ---
-@st.cache_resource
-def cargar_modelos():
-    rf = joblib.load("Random_Forest.pkl")
-    kr = joblib.load("Kernel_Ridge.pkl")
-    return {"Random Forest": rf, "Kernel Ridge": kr}
+# --- Cargar modelo correspondiente ---
+modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
 
-modelos = cargar_modelos()
+st.markdown("---")
 
-# --- Selección de modelo ---
-modelo_nombre = st.selectbox("Selecciona el modelo para predecir:", list(modelos.keys()))
-modelo = modelos[modelo_nombre]
+# --- Cargar columnas usadas por el modelo (ajustar si cambiaste features) ---
+columnas_usadas = modelo.feature_names_in_  # Este atributo lo guarda joblib si fue entrenado con pandas DataFrame
 
-# --- Columnas necesarias ---
-columnas_esperadas = modelo.named_steps["preprocessor"].transformers_[0][2] + \
-                     modelo.named_steps["preprocessor"].transformers_[1][2]
-
-st.markdown("### 📝 Ingrese los datos de la vivienda")
-
+# --- Crear inputs dinámicos para cada columna ---
+st.subheader("📝 Ingresa las características de la vivienda:")
 input_data = {}
-
-for columna in columnas_esperadas:
-    if columna.lower().startswith("year") or columna.lower().endswith("yr") or "flr" in columna.lower():
-        valor = st.number_input(f"{columna}", step=1)
-    elif "area" in columna.lower() or "sf" in columna.lower() or "frontage" in columna.lower() or "porch" in columna.lower():
-        valor = st.number_input(f"{columna}", step=1.0)
-    elif "qual" in columna.lower() or "cond" in columna.lower() or "bath" in columna.lower() or "room" in columna.lower():
-        valor = st.number_input(f"{columna}", step=1)
-    elif "type" in columna.lower() or "style" in columna.lower() or "zone" in columna.lower():
-        valor = st.text_input(f"{columna}")
-    elif columna.lower() == "central air":
-        valor = st.selectbox(f"{columna}", ["Y", "N"])
+for col in columnas_usadas:
+    if "Area" in col or "SF" in col or "Yr" in col or "Porch" in col or "Flr" in col or "Rooms" in col or "Bath" in col:
+        input_data[col] = st.number_input(f"{col}", value=0)
+    elif modelo.__class__.__name__ == "RandomForestRegressor" and isinstance(modelo.feature_importances_, np.ndarray):
+        # intenta detectar si es categórica de entrenamiento por nombres
+        if modelo.feature_importances_.shape[0] > 0:
+            input_data[col] = st.text_input(f"{col}", value="")
     else:
-        valor = st.text_input(f"{columna}")
-    input_data[columna] = valor
+        input_data[col] = st.text_input(f"{col}", value="")
 
-if st.button("Predecir precio"):
+# --- Botón para predecir ---
+if st.button("🔮 Predecir Precio"):
     try:
         df_input = pd.DataFrame([input_data])
-        pred = modelo.predict(df_input)[0]
-        st.success(f"💰 El precio estimado de la vivienda es: ${pred:,.2f}")
+        prediction = modelo.predict(df_input)[0]
+        st.success(f"💲 Precio estimado: ${prediction:,.2f}")
     except Exception as e:
         st.error(f"❌ Error al predecir: {e}")
+
