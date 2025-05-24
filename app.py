@@ -122,8 +122,8 @@ st.header("🎯 Predicción Interactiva de Precio de Vivienda")
 
 # Diccionario con las URLs públicas de Google Drive para descargar los modelos
 model_urls = {
-    "Random Forest": 'https://drive.google.com/uc?id=1GtxJH-gNCNhjQXX-haMhMsnJGwaom98D',
-    "Kernel Ridge": 'https://drive.google.com/uc?id=1e7wIJn19DaYolbV_poxv0ieZ-96hiqh1'
+    "Random Forest": 'https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35',
+    "Kernel Ridge": 'https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm'
 }
 
 # Descargar y cargar modelos
