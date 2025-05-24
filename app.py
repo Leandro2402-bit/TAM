@@ -112,8 +112,6 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 
 # ===================== Prediccion interactiva =====================
 
-st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
-
 import pandas as pd
 import numpy as np
 import joblib
