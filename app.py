@@ -111,13 +111,14 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 
 # ===================== Prediccion interactiva =====================
 import streamlit as st
+st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
+
 import pandas as pd
 import numpy as np
 import joblib
 import os
 import gdown
 
-st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
 st.title("🏠 Predicción de precios de vivienda - AmesHousing")
 
 # --- Enlaces de Drive ---
