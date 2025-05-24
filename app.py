@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 # ===================== TÍTULO Y DESCRIPCIÓN =====================
 
 st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
@@ -110,9 +111,7 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 """)
 
 # ===================== Prediccion interactiva =====================
-import streamlit as st
 
-# ✅ Esta línea DEBE ser la primera después de importar Streamlit
 st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
 
 import pandas as pd
