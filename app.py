@@ -113,7 +113,6 @@ Estas métricas permiten entender si el modelo predice bien y en qué magnitud s
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 import gdown
 import os
@@ -130,52 +129,64 @@ model_urls = {
 # Diccionario donde se almacenarán los modelos cargados
 loaded_models = {}
 
-# Descargar y cargar los modelos si no existen localmente
+# Descargar y cargar los modelos
 for name, url in model_urls.items():
     filename = f"{name.replace(' ', '_')}.pkl"
-    if not os.path.exists(filename):
-        gdown.download(url, filename, quiet=False)
     try:
+        if not os.path.exists(filename):
+            gdown.download(url, filename, quiet=True)
         loaded_models[name] = joblib.load(filename)
     except Exception as e:
-        st.error(f"❌ No se pudo cargar el modelo {name}.")
-        st.exception(e)
+        st.error(f"❌ No se pudo cargar el modelo {name}: {str(e)}")
+        continue
 
-# Mostrar un selectbox para que el usuario elija el modelo
+# Verificar si se cargaron modelos correctamente
+if not loaded_models:
+    st.error("No se pudo cargar ningún modelo. Por favor verifica los archivos.")
+    st.stop()
+
+# Selección del modelo
 model_name = st.selectbox("📌 Selecciona el modelo para predecir:", list(loaded_models.keys()))
-
-# Obtener el modelo seleccionado
-modelo = loaded_models[model_name]
+model = loaded_models[model_name]
 
 # Mostrar las variables necesarias para la predicción
 st.markdown("### ✍️ Ingresa los datos de la vivienda")
 
-# Elegimos algunas de las variables más relevantes según la correlación
-GrLivArea = st.number_input("Área habitable sobre el suelo (Gr Liv Area)", min_value=300, max_value=6000, value=1500)
-OverallQual = st.slider("Calidad general del material y acabado (Over all Qual)", 1, 10, 5)
-GarageCars = st.slider("Cantidad de espacios en garaje (Garage Cars)", 0, 5, 2)
-TotalBsmtSF = st.number_input("Área total del sótano (Total Bsmt SF)", min_value=0, max_value=3000, value=800)
-YearBuilt = st.number_input("Año de construcción (Year Built)", min_value=1870, max_value=2023, value=2000)
+# Inputs del usuario (asegúrate que estos nombres coincidan con los que usó el modelo)
+GrLivArea = st.number_input("Área habitable sobre el suelo (GrLivArea)", min_value=300, max_value=6000, value=1500)
+OverallQual = st.slider("Calidad general (OverallQual)", 1, 10, 5)
+GarageCars = st.slider("Espacios en garaje (GarageCars)", 0, 5, 2)
+TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
+YearBuilt = st.number_input("Año de construcción (YearBuilt)", min_value=1870, max_value=2023, value=2000)
 
-# Creamos un DataFrame con los datos ingresados
+# Crear DataFrame con los nombres EXACTOS que espera el modelo
 input_data = pd.DataFrame({
-    "Gr Liv Area": [GrLivArea],
-    "Over all Qual": [OverallQual],
-    "Garage Cars": [GarageCars],
-    "Total Bsmt SF": [TotalBsmtSF],
+    "GrLivArea": [GrLivArea],
+    "OverallQual": [OverallQual],
+    "GarageCars": [GarageCars],
+    "TotalBsmtSF": [TotalBsmtSF],
     "YearBuilt": [YearBuilt]
 })
 
-# Realizamos la predicción cuando el usuario presiona el botón
+# Realizar predicción
 if st.button("🔮 Predecir Precio"):
     try:
-        # Predecimos con el modelo seleccionado
-        predicted_price = modelo.predict(input_data)[0]
-        # Mostramos el resultado formateado como dinero
-        st.success(f"💰 Precio estimado de la vivienda: *${predicted_price:,.0f}*")
+        # Verificar que el modelo esté cargado correctamente
+        if not hasattr(model, 'predict'):
+            st.error("El modelo no tiene método predict. Verifica el archivo del modelo.")
+            st.stop()
+            
+        predicted_price = model.predict(input_data)[0]
+        st.success(f"💰 Precio estimado de la vivienda: ${predicted_price:,.2f}")
+        
+        # Mostrar advertencia sobre la precisión
+        st.info("""
+        ℹ️ Esta es una estimación aproximada. 
+        El precio real puede variar según otros factores no considerados en este modelo.
+        """)
     except Exception as e:
-        st.error("❌ Error al realizar la predicción.")
-        st.exception(e)
-
+        st.error(f"❌ Error al realizar la predicción: {str(e)}")
+        st.write("Detalles técnicos del error:")
+        st.code(str(e), language='python')
 
     
