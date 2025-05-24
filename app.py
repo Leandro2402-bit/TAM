@@ -108,7 +108,3 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 ---
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
-
-
-
-    
