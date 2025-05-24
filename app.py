@@ -1,7 +1,7 @@
 import streamlit as st
-st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
 
 # ===================== TÍTULO Y DESCRIPCIÓN =====================
+st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
 
 st.title("🏡 Predicción de Precio de Viviendas - AmesHousing")
 
