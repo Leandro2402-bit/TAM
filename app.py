@@ -119,7 +119,7 @@ import os
 # --- URLS de los modelos en Drive ---
 urls = {
     "Random Forest": "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35",
-    "Kernel Ridge": "https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm"
+    "Kernel Ridge": "https://drive.google.com/uc?id=1N39GRVT8xzWi36L1KFwzYhs0ECtekbPF"
 }
 
 # --- Cargar modelo si no está en disco ---
