@@ -134,7 +134,7 @@ st.title("🏠 Predicción de Precios de Vivienda - AmesHousing")
 modelo_seleccionado = st.selectbox("🔍 Selecciona un modelo para predecir:", list(urls.keys()))
 modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
 
-# --- Lista de campos importantes a mostrar (puedes ajustarlos tú mismo) ---
+# --- Lista de campos importantes a mostrar ---
 campos_clave = {
     "Overall Qual": {"tipo": "slider", "min": 1, "max": 10, "recomendacion": "Calidad general del material y acabado"},
     "Gr Liv Area": {"tipo": "number", "recomendacion": "Área habitable sobre el nivel del suelo (en pies²)"},
@@ -177,7 +177,7 @@ if st.button("🔮 Predecir Precio"):
         # Completamos el resto de columnas que espera el modelo con ceros o valores nulos
         for col in modelo.feature_names_in_:
             if col not in df.columns:
-                df[col] = 0  # O puedes usar np.nan dependiendo del modelo
+                df[col] = 0  
         df = df[modelo.feature_names_in_]  # Asegurar el orden correcto
 
         pred = modelo.predict(df)[0]
