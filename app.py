@@ -109,138 +109,155 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
-# ===================== PREDICCIÓN INTERACTIVA =====================
+# ================== CARGA DEL MODELO RANDOM FOREST DESDE GOOGLE DRIVE ==================
+import os                 # Para verificar si el archivo ya existe
+import gdown              # Para descargar desde Google Drive
+import joblib             # Para cargar el modelo .pkl
+import streamlit as st    # Para mensajes visuales en la app
 
-import streamlit as st
-import pandas as pd
-import joblib
-import gdown
+# ID de tu archivo en Google Drive
+file_id = '1y992YhEfjkipa8tI0A-MMxegvPaEBHZR'
+
+# Construimos la URL de descarga directa desde Google Drive
+url = f'https://drive.google.com/uc?id={file_id}'
+
+# Nombre del archivo que tendrá localmente en la app
+output_path = 'random_forest_model.pkl'
+
+# Si el archivo aún no existe, lo descargamos
+if not os.path.exists(output_path):
+    with st.spinner('🔽 Descargando modelo Random Forest desde Google Drive...'):
+        gdown.download(url, output_path, quiet=False)  # Descarga el archivo
+
+# Cargamos el modelo una vez descargado
+model_rf = joblib.load(output_path)
+
+# Mostramos mensaje de éxito en la interfaz de Streamlit
+st.success("✅ Modelo Random Forest cargado exitosamente.")
+
+# ================== CARGA DEL MODELO RANDOM FOREST DESDE GOOGLE DRIVE ==================
 import os
+import gdown
+import joblib
 
-# Subtítulo de la sección
-st.header("🎯 Predicción Interactiva de Precio de Vivienda")
+# ID de tu archivo en Google Drive (ajusta esto con tu ID real)
+file_id = '1ABCdEFghIJklmnOPqrSTUvWxyz'  # 👈 Reemplaza esto con tu ID real
 
-# Diccionario con las URLs públicas de Google Drive para descargar los modelos
-model_urls = {
-    "Random Forest": 'https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35',
-    "Kernel Ridge": 'https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm'
-}
+# Construimos la URL directa de descarga
+url = f'https://drive.google.com/uc?id={file_id}'
+output_path = 'random_forest_model.pkl'
 
-# Descargar y cargar modelos
-@st.cache_resource
-def load_models():
-    loaded_models = {}
-    for name, url in model_urls.items():
-        filename = f"{name.replace(' ', '_')}.pkl"
-        try:
-            if not os.path.exists(filename):
-                gdown.download(url, filename, quiet=True)
-            loaded_models[name] = joblib.load(filename)
-        except Exception as e:
-            st.error(f"Error cargando el modelo {name}: {str(e)}")
-    return loaded_models
+# Si el archivo aún no está en el entorno, lo descargamos
+if not os.path.exists(output_path):
+    with st.spinner('Descargando modelo Random Forest desde Google Drive...'):
+        gdown.download(url, output_path, quiet=False)
 
-loaded_models = load_models()
+# Cargamos el modelo ya descargado
+model_rf = joblib.load(output_path)
 
-# Verificar si se cargaron los modelos
-if not loaded_models:
-    st.error("No se pudieron cargar los modelos. Por favor verifica los enlaces.")
-    st.stop()
+st.success("✅ Modelo Random Forest cargado exitosamente.")
 
-# Selección del modelo
-model_name = st.selectbox(
-    "📌 Selecciona el modelo para predecir:",
-    options=list(loaded_models.keys()),
-    help="Random Forest suele ser más preciso pero Kernel Ridge es más rápido"
-)
+# ===============================================
+# DESCARGA Y CARGA DEL MODELO RANDOM FOREST =====
 
-# Widgets para entrada de datos (usando las mismas variables que en el entrenamiento)
-st.markdown("### ✍️ Características de la Vivienda")
+import gdown  # Librería para descargar archivos de Google Drive
+import joblib  # Librería para cargar el modelo .pkl
+import os      # Librería para verificar existencia del archivo
 
-col1, col2 = st.columns(2)
+# ID del archivo compartido en Google Drive (modelo entrenado)
+file_id = "1y992YhEfjkipa8tI0A-MMxegvPaEBHZR"
 
-with col1:
-    GrLivArea = st.number_input(
-        "Área habitable sobre suelo (GrLivArea)", 
-        min_value=300, max_value=6000, value=1500,
-        help="Área habitable en pies cuadrados"
-    )
-    
-    OverallQual = st.slider(
-        "Calidad general (OverallQual)", 
-        min_value=1, max_value=10, value=5,
-        help="Escala de 1 (muy pobre) a 10 (excelente)"
-    )
-    
-    GarageCars = st.slider(
-        "Espacios en garaje (GarageCars)", 
-        min_value=0, max_value=5, value=2,
-        help="Número de espacios para autos"
-    )
+# Nombre con el que se guardará el archivo descargado localmente
+output_file = "random_forest_model.pkl"
 
-with col2:
-    TotalBsmtSF = st.number_input(
-        "Área total del sótano (TotalBsmtSF)", 
-        min_value=0, max_value=3000, value=800,
-        help="Área del sótano en pies cuadrados"
-    )
-    
-    YearBuilt = st.number_input(
-        "Año de construcción (YearBuilt)", 
-        min_value=1870, max_value=2023, value=2000,
-        help="Año original de construcción"
-    )
-    
-    Neighborhood = st.selectbox(
-        "Barrio (Neighborhood)", 
-        options=['CollgCr', 'Veenker', 'Crawfor', 'NoRidge', 'Mitchel', 'Somerst', 'NWAmes', 
-                'OldTown', 'BrkSide', 'Sawyer', 'NridgHt', 'NAmes', 'SawyerW', 'IDOTRR', 
-                'MeadowV', 'Edwards', 'Timber', 'Gilbert', 'StoneBr', 'ClearCr', 'NPkVill', 
-                'Blmngtn', 'BrDale', 'SWISU', 'Blueste'],
-        index=0,
-        help="Selecciona el barrio de la propiedad"
-    )
+# Definimos la variable del modelo como None por defecto
+model = None
 
-# Crear DataFrame con la estructura EXACTA que espera el modelo
-input_data = pd.DataFrame({
-    'GrLivArea': [GrLivArea],
-    'OverallQual': [OverallQual],
-    'GarageCars': [GarageCars],
-    'TotalBsmtSF': [TotalBsmtSF],
-    'YearBuilt': [YearBuilt],
-    'Neighborhood': [Neighborhood]
-})
+try:
+    # Solo descarga si el archivo no existe
+    if not os.path.exists(output_file):
+        with st.spinner("🔽 Descargando modelo Random Forest desde Google Drive..."):
+            gdown.download(f"https://drive.google.com/uc?id={file_id}", output_file, quiet=False)
 
-# Botón de predicción
-if st.button("🔮 Predecir Precio", type="primary"):
-    try:
-        model = loaded_models[model_name]
-        prediction = model.predict(input_data)[0]
-        
-        # Mostrar resultado con estilo
-        st.success(f"**Precio estimado:** ${prediction:,.2f}")
-        
-        # Explicación adicional
-        st.info("""
-        **Nota sobre la predicción:**
-        - Esta estimación se basa en las características ingresadas y el modelo seleccionado.
-        - El precio real puede variar según factores adicionales no considerados.
-        - Para una valoración profesional, recomendamos consultar con un experto.
-        """)
-        
-    except Exception as e:
-        st.error("Ocurrió un error al realizar la predicción")
-        st.error(f"Detalles técnicos: {str(e)}")
+    # Verificamos que el archivo se haya descargado correctamente
+    if os.path.exists(output_file):
+        # Cargamos el modelo desde el archivo .pkl
+        model = joblib.load(output_file)
+        st.success("✅ Modelo Random Forest cargado exitosamente.")
+    else:
+        st.error("❌ No se encontró el archivo del modelo.")
+except Exception as e:
+    st.error(f"⚠ Error al cargar el modelo: {e}")
 
-# Sección adicional de información
-st.markdown("---")
-st.markdown("""
-**ℹ️ Sobre los modelos:**
-- **Random Forest:** Modelo basado en árboles de decisión, generalmente más preciso pero más complejo.
-- **Kernel Ridge:** Modelo lineal con kernel, más rápido pero a veces menos preciso.
+# Verificación final del modelo
+if model is not None:
+    st.info("📊 El modelo está listo para realizar predicciones.")
+        # ==============================
+    # 📝 FORMULARIO DE ENTRADA
+    # ==============================
 
-**Recomendación:** Prueba ambos modelos y compara resultados.
-""")
+    st.subheader("🔍 Ingresa los datos de la vivienda para predecir el precio")
+
+    # Creamos columnas para una mejor disposición en pantalla
+    col1, col2 = st.columns(2)
+
+    # Variables numéricas típicas
+    with col1:
+        OverallQual = st.slider("Calidad general (OverallQual)", 1, 10, 5)
+        GrLivArea = st.number_input("Área habitable (GrLivArea)", min_value=100, max_value=6000, value=1500)
+        GarageCars = st.slider("Número de autos en garaje (GarageCars)", 0, 4, 2)
+        GarageArea = st.number_input("Área del garaje (GarageArea)", min_value=0, max_value=1500, value=500)
+
+    with col2:
+        TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
+        FullBath = st.slider("Baños completos (FullBath)", 0, 4, 2)
+        YearBuilt = st.slider("Año de construcción (YearBuilt)", 1870, 2020, 1990)
+        YearRemodAdd = st.slider("Año de remodelación (YearRemodAdd)", 1950, 2020, 2005)
+
+    # ==============================
+    # 🔮 PREDICCIÓN (versión simple)
+    # ==============================
+
+    if st.button("Predecir Precio"):
+        # Lista completa de columnas que espera el modelo
+        columnas_modelo = [
+            "Order", "PID", "MS SubClass", "MS Zoning", "Lot Frontage", "Lot Area", "Street", "Alley", "Lot Shape",
+            "Land Contour", "Utilities", "Lot Config", "Land Slope", "Neighborhood", "Condition 1", "Condition 2",
+            "Bldg Type", "House Style", "Overall Qual", "Overall Cond", "Year Built", "Year Remod/Add", "Roof Style",
+            "Roof Matl", "Exterior 1st", "Exterior 2nd", "Mas Vnr Type", "Mas Vnr Area", "Exter Qual", "Exter Cond",
+            "Foundation", "Bsmt Qual", "Bsmt Cond", "Bsmt Exposure", "BsmtFin Type 1", "BsmtFin SF 1", "BsmtFin Type 2",
+            "BsmtFin SF 2", "Bsmt Unf SF", "Total Bsmt SF", "Heating", "Heating QC", "Central Air", "Electrical",
+            "1st Flr SF", "2nd Flr SF", "Low Qual Fin SF", "Gr Liv Area", "Bsmt Full Bath", "Bsmt Half Bath", "Full Bath",
+            "Half Bath", "Bedroom AbvGr", "Kitchen AbvGr", "Kitchen Qual", "TotRms AbvGrd", "Functional", "Fireplaces",
+            "Fireplace Qu", "Garage Type", "Garage Yr Blt", "Garage Finish", "Garage Cars", "Garage Area", "Garage Qual",
+            "Garage Cond", "Paved Drive", "Wood Deck SF", "Open Porch SF", "Enclosed Porch", "3Ssn Porch",
+            "Screen Porch", "Pool Area", "Pool QC", "Fence", "Misc Feature", "Misc Val", "Mo Sold", "Yr Sold",
+            "Sale Type", "Sale Condition"
+        ]
+
+        # Creamos un diccionario base con ceros
+        datos_defecto = {col: 0 for col in columnas_modelo}
+
+        # Reemplazamos con los valores que el usuario realmente ingresó
+        datos_defecto.update({
+            "Overall Qual": OverallQual,
+            "Gr Liv Area": GrLivArea,
+            "Garage Cars": GarageCars,
+            "Garage Area": GarageArea,
+            "Total Bsmt SF": TotalBsmtSF,
+            "Full Bath": FullBath,
+            "Year Built": YearBuilt,
+            "Year Remod/Add": YearRemodAdd
+        })
+
+        # Creamos el DataFrame con los datos actualizados
+        input_data = pd.DataFrame([datos_defecto])
+
+        # Realizamos la predicción
+        predicted_price = model.predict(input_data)[0]
+
+        # Mostramos el resultado
+        st.success(f"💰 Precio estimado de la vivienda: *${predicted_price:,.0f}*")
 
 
     
