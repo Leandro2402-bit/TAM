@@ -163,11 +163,11 @@ for campo, config in campos_clave.items():
     st.markdown(f"**{campo}** — _{config['recomendacion']}_")
     
     if config["tipo"] == "slider":
-        input_data[campo] = st.slider("", min_value=config["min"], max_value=config["max"], value=config["min"])
+        input_data[campo] = st.slider(f"Selecciona valor para {campo}", min_value=config["min"], max_value=config["max"], value=config["min"])
     elif config["tipo"] == "number":
-        input_data[campo] = st.number_input("", min_value=0, step=10)
+        input_data[campo] = st.number_input(f"Ingresa valor para {campo}", min_value=0, step=10)
     elif config["tipo"] == "select":
-        input_data[campo] = st.selectbox("", config["opciones"])
+        input_data[campo] = st.selectbox(f"Selecciona opción para {campo}", config["opciones"])
     st.markdown("---")
 
 # --- Botón de predicción ---
