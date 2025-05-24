@@ -1,9 +1,7 @@
 import streamlit as st
-
+st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
 
 # ===================== TÍTULO Y DESCRIPCIÓN =====================
-
-st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
 
 st.title("🏡 Predicción de Precio de Viviendas - AmesHousing")
 
@@ -124,46 +122,66 @@ urls = {
     "Kernel Ridge": "https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm"
 }
 
-# --- Cargar el modelo si no está en disco ---
+# --- Cargar modelo si no está en disco ---
 def load_model(model_name, url):
     filename = f"{model_name.replace(' ', '_')}.pkl"
     if not os.path.exists(filename):
         gdown.download(url, filename, quiet=False)
     return joblib.load(filename)
 
-# --- Título de la app ---
-st.title("🏡 Predicción del Precio de Vivienda - AmesHousing")
-
-# --- Selección del modelo ---
-modelo_seleccionado = st.selectbox("Selecciona un modelo para predecir:", list(urls.keys()))
-
-# --- Cargar modelo correspondiente ---
+# --- Selección de modelo ---
+st.title("🏠 Predicción de Precios de Vivienda - AmesHousing")
+modelo_seleccionado = st.selectbox("🔍 Selecciona un modelo para predecir:", list(urls.keys()))
 modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
 
-st.markdown("---")
+# --- Lista de campos importantes a mostrar (puedes ajustarlos tú mismo) ---
+campos_clave = {
+    "Overall Qual": {"tipo": "slider", "min": 1, "max": 10, "recomendacion": "Calidad general del material y acabado"},
+    "Gr Liv Area": {"tipo": "number", "recomendacion": "Área habitable sobre el nivel del suelo (en pies²)"},
+    "Garage Cars": {"tipo": "slider", "min": 0, "max": 4, "recomendacion": "Número de carros que caben en el garaje"},
+    "Total Bsmt SF": {"tipo": "number", "recomendacion": "Área total del sótano (en pies²)"},
+    "Year Built": {"tipo": "number", "recomendacion": "Año de construcción de la casa"},
+    "Full Bath": {"tipo": "slider", "min": 0, "max": 4, "recomendacion": "Número de baños completos"},
+    "1st Flr SF": {"tipo": "number", "recomendacion": "Área del primer piso (en pies²)"},
+    "Garage Area": {"tipo": "number", "recomendacion": "Área del garaje (en pies²)"},
+    "Kitchen Qual": {
+        "tipo": "select", 
+        "opciones": ["Ex", "Gd", "TA", "Fa", "Po"], 
+        "recomendacion": "Calidad de la cocina (Ex: Excelente, Gd: Buena, TA: Típica, Fa: Regular, Po: Pobre)"
+    },
+    "Neighborhood": {
+        "tipo": "select",
+        "opciones": ["NridgHt", "CollgCr", "Crawfor", "Somerst", "OldTown", "Mitchel", "NWAmes", "Sawyer"],
+        "recomendacion": "Vecindario donde está ubicada la casa"
+    }
+}
 
-# --- Cargar columnas usadas por el modelo (ajustar si cambiaste features) ---
-columnas_usadas = modelo.feature_names_in_  # Este atributo lo guarda joblib si fue entrenado con pandas DataFrame
-
-# --- Crear inputs dinámicos para cada columna ---
-st.subheader("📝 Ingresa las características de la vivienda:")
+# --- Recolección de inputs amigables ---
+st.markdown("### 📝 Ingresa los datos principales de la vivienda")
 input_data = {}
-for col in columnas_usadas:
-    if "Area" in col or "SF" in col or "Yr" in col or "Porch" in col or "Flr" in col or "Rooms" in col or "Bath" in col:
-        input_data[col] = st.number_input(f"{col}", value=0)
-    elif modelo.__class__.__name__ == "RandomForestRegressor" and isinstance(modelo.feature_importances_, np.ndarray):
-        # intenta detectar si es categórica de entrenamiento por nombres
-        if modelo.feature_importances_.shape[0] > 0:
-            input_data[col] = st.text_input(f"{col}", value="")
-    else:
-        input_data[col] = st.text_input(f"{col}", value="")
+for campo, config in campos_clave.items():
+    st.markdown(f"**{campo}** — _{config['recomendacion']}_")
+    
+    if config["tipo"] == "slider":
+        input_data[campo] = st.slider("", min_value=config["min"], max_value=config["max"], value=config["min"])
+    elif config["tipo"] == "number":
+        input_data[campo] = st.number_input("", min_value=0, step=10)
+    elif config["tipo"] == "select":
+        input_data[campo] = st.selectbox("", config["opciones"])
+    st.markdown("---")
 
-# --- Botón para predecir ---
+# --- Botón de predicción ---
 if st.button("🔮 Predecir Precio"):
     try:
-        df_input = pd.DataFrame([input_data])
-        prediction = modelo.predict(df_input)[0]
-        st.success(f"💲 Precio estimado: ${prediction:,.2f}")
+        df = pd.DataFrame([input_data])
+        # Completamos el resto de columnas que espera el modelo con ceros o valores nulos
+        for col in modelo.feature_names_in_:
+            if col not in df.columns:
+                df[col] = 0  # O puedes usar np.nan dependiendo del modelo
+        df = df[modelo.feature_names_in_]  # Asegurar el orden correcto
+
+        pred = modelo.predict(df)[0]
+        st.success(f"💵 Precio estimado: ${pred:,.2f}")
     except Exception as e:
         st.error(f"❌ Error al predecir: {e}")
 
