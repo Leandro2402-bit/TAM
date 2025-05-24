@@ -108,3 +108,71 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 ---
 Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
+
+# ===================== Prediccion interactiva =====================
+import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+import os
+import gdown
+
+st.set_page_config(page_title="Predicción AmesHousing", layout="wide")
+st.title("🏠 Predicción de precios de vivienda - AmesHousing")
+
+# --- Enlaces de Drive ---
+url_rf = "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35"
+url_kr = "https://drive.google.com/uc?id=1CVDu6oJxWS112a1MCn9vDcWwBVwLL8Nm"
+
+# --- Descargar modelos si no existen ---
+if not os.path.exists("Random_Forest.pkl"):
+    with st.spinner("Descargando modelo Random Forest..."):
+        gdown.download(url_rf, "Random_Forest.pkl", quiet=False)
+
+if not os.path.exists("Kernel_Ridge.pkl"):
+    with st.spinner("Descargando modelo Kernel Ridge..."):
+        gdown.download(url_kr, "Kernel_Ridge.pkl", quiet=False)
+
+# --- Cargar modelos ---
+@st.cache_resource
+def cargar_modelos():
+    rf = joblib.load("Random_Forest.pkl")
+    kr = joblib.load("Kernel_Ridge.pkl")
+    return {"Random Forest": rf, "Kernel Ridge": kr}
+
+modelos = cargar_modelos()
+
+# --- Selección de modelo ---
+modelo_nombre = st.selectbox("Selecciona el modelo para predecir:", list(modelos.keys()))
+modelo = modelos[modelo_nombre]
+
+# --- Columnas necesarias ---
+columnas_esperadas = modelo.named_steps["preprocessor"].transformers_[0][2] + \
+                     modelo.named_steps["preprocessor"].transformers_[1][2]
+
+st.markdown("### 📝 Ingrese los datos de la vivienda")
+
+input_data = {}
+
+for columna in columnas_esperadas:
+    if columna.lower().startswith("year") or columna.lower().endswith("yr") or "flr" in columna.lower():
+        valor = st.number_input(f"{columna}", step=1)
+    elif "area" in columna.lower() or "sf" in columna.lower() or "frontage" in columna.lower() or "porch" in columna.lower():
+        valor = st.number_input(f"{columna}", step=1.0)
+    elif "qual" in columna.lower() or "cond" in columna.lower() or "bath" in columna.lower() or "room" in columna.lower():
+        valor = st.number_input(f"{columna}", step=1)
+    elif "type" in columna.lower() or "style" in columna.lower() or "zone" in columna.lower():
+        valor = st.text_input(f"{columna}")
+    elif columna.lower() == "central air":
+        valor = st.selectbox(f"{columna}", ["Y", "N"])
+    else:
+        valor = st.text_input(f"{columna}")
+    input_data[columna] = valor
+
+if st.button("Predecir precio"):
+    try:
+        df_input = pd.DataFrame([input_data])
+        pred = modelo.predict(df_input)[0]
+        st.success(f"💰 El precio estimado de la vivienda es: ${pred:,.2f}")
+    except Exception as e:
+        st.error(f"❌ Error al predecir: {e}")
