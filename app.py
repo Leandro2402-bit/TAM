@@ -122,71 +122,125 @@ st.header("🎯 Predicción Interactiva de Precio de Vivienda")
 
 # Diccionario con las URLs públicas de Google Drive para descargar los modelos
 model_urls = {
-    "Random Forest": 'https://drive.google.com/uc?id=1cB_Oc6Y9pz7kjb7Kd2VH79kBP7jYVASj',
-    "Kernel Ridge": 'https://drive.google.com/uc?id=1NwXf6o1WXHr8JDVDlLfxh_MFxpPCjUW9'
+    "Random Forest": 'https://drive.google.com/uc?id=1GtxJH-gNCNhjQXX-haMhMsnJGwaom98D',
+    "Kernel Ridge": 'https://drive.google.com/uc?id=1e7wIJn19DaYolbV_poxv0ieZ-96hiqh1'
 }
 
-# Diccionario donde se almacenarán los modelos cargados
-loaded_models = {}
+# Descargar y cargar modelos
+@st.cache_resource
+def load_models():
+    loaded_models = {}
+    for name, url in model_urls.items():
+        filename = f"{name.replace(' ', '_')}.pkl"
+        try:
+            if not os.path.exists(filename):
+                gdown.download(url, filename, quiet=True)
+            loaded_models[name] = joblib.load(filename)
+        except Exception as e:
+            st.error(f"Error cargando el modelo {name}: {str(e)}")
+    return loaded_models
 
-# Descargar y cargar los modelos
-for name, url in model_urls.items():
-    filename = f"{name.replace(' ', '_')}.pkl"
-    try:
-        if not os.path.exists(filename):
-            gdown.download(url, filename, quiet=True)
-        loaded_models[name] = joblib.load(filename)
-    except Exception as e:
-        st.error(f"❌ No se pudo cargar el modelo {name}: {str(e)}")
-        continue
+loaded_models = load_models()
 
-# Verificar si se cargaron modelos correctamente
+# Verificar si se cargaron los modelos
 if not loaded_models:
-    st.error("No se pudo cargar ningún modelo. Por favor verifica los archivos.")
+    st.error("No se pudieron cargar los modelos. Por favor verifica los enlaces.")
     st.stop()
 
 # Selección del modelo
-model_name = st.selectbox("📌 Selecciona el modelo para predecir:", list(loaded_models.keys()))
-model = loaded_models[model_name]
+model_name = st.selectbox(
+    "📌 Selecciona el modelo para predecir:",
+    options=list(loaded_models.keys()),
+    help="Random Forest suele ser más preciso pero Kernel Ridge es más rápido"
+)
 
-# Mostrar las variables necesarias para la predicción
-st.markdown("### ✍️ Ingresa los datos de la vivienda")
+# Widgets para entrada de datos (usando las mismas variables que en el entrenamiento)
+st.markdown("### ✍️ Características de la Vivienda")
 
-# Inputs del usuario (asegúrate que estos nombres coincidan con los que usó el modelo)
-GrLivArea = st.number_input("Área habitable sobre el suelo (GrLivArea)", min_value=300, max_value=6000, value=1500)
-OverallQual = st.slider("Calidad general (OverallQual)", 1, 10, 5)
-GarageCars = st.slider("Espacios en garaje (GarageCars)", 0, 5, 2)
-TotalBsmtSF = st.number_input("Área total del sótano (TotalBsmtSF)", min_value=0, max_value=3000, value=800)
-YearBuilt = st.number_input("Año de construcción (YearBuilt)", min_value=1870, max_value=2023, value=2000)
+col1, col2 = st.columns(2)
 
-# Crear DataFrame con los nombres EXACTOS que espera el modelo
+with col1:
+    GrLivArea = st.number_input(
+        "Área habitable sobre suelo (GrLivArea)", 
+        min_value=300, max_value=6000, value=1500,
+        help="Área habitable en pies cuadrados"
+    )
+    
+    OverallQual = st.slider(
+        "Calidad general (OverallQual)", 
+        min_value=1, max_value=10, value=5,
+        help="Escala de 1 (muy pobre) a 10 (excelente)"
+    )
+    
+    GarageCars = st.slider(
+        "Espacios en garaje (GarageCars)", 
+        min_value=0, max_value=5, value=2,
+        help="Número de espacios para autos"
+    )
+
+with col2:
+    TotalBsmtSF = st.number_input(
+        "Área total del sótano (TotalBsmtSF)", 
+        min_value=0, max_value=3000, value=800,
+        help="Área del sótano en pies cuadrados"
+    )
+    
+    YearBuilt = st.number_input(
+        "Año de construcción (YearBuilt)", 
+        min_value=1870, max_value=2023, value=2000,
+        help="Año original de construcción"
+    )
+    
+    Neighborhood = st.selectbox(
+        "Barrio (Neighborhood)", 
+        options=['CollgCr', 'Veenker', 'Crawfor', 'NoRidge', 'Mitchel', 'Somerst', 'NWAmes', 
+                'OldTown', 'BrkSide', 'Sawyer', 'NridgHt', 'NAmes', 'SawyerW', 'IDOTRR', 
+                'MeadowV', 'Edwards', 'Timber', 'Gilbert', 'StoneBr', 'ClearCr', 'NPkVill', 
+                'Blmngtn', 'BrDale', 'SWISU', 'Blueste'],
+        index=0,
+        help="Selecciona el barrio de la propiedad"
+    )
+
+# Crear DataFrame con la estructura EXACTA que espera el modelo
 input_data = pd.DataFrame({
-    "GrLivArea": [GrLivArea],
-    "OverallQual": [OverallQual],
-    "GarageCars": [GarageCars],
-    "TotalBsmtSF": [TotalBsmtSF],
-    "YearBuilt": [YearBuilt]
+    'GrLivArea': [GrLivArea],
+    'OverallQual': [OverallQual],
+    'GarageCars': [GarageCars],
+    'TotalBsmtSF': [TotalBsmtSF],
+    'YearBuilt': [YearBuilt],
+    'Neighborhood': [Neighborhood]
 })
 
-# Realizar predicción
-if st.button("🔮 Predecir Precio"):
+# Botón de predicción
+if st.button("🔮 Predecir Precio", type="primary"):
     try:
-        # Verificar que el modelo esté cargado correctamente
-        if not hasattr(model, 'predict'):
-            st.error("El modelo no tiene método predict. Verifica el archivo del modelo.")
-            st.stop()
-            
-        predicted_price = model.predict(input_data)[0]
-        st.success(f"💰 Precio estimado de la vivienda: ${predicted_price:,.2f}")
+        model = loaded_models[model_name]
+        prediction = model.predict(input_data)[0]
         
-        # Mostrar advertencia sobre la precisión
+        # Mostrar resultado con estilo
+        st.success(f"**Precio estimado:** ${prediction:,.2f}")
+        
+        # Explicación adicional
         st.info("""
-        ℹ️ Esta es una estimación aproximada. 
-        El precio real puede variar según otros factores no considerados en este modelo.
+        **Nota sobre la predicción:**
+        - Esta estimación se basa en las características ingresadas y el modelo seleccionado.
+        - El precio real puede variar según factores adicionales no considerados.
+        - Para una valoración profesional, recomendamos consultar con un experto.
         """)
+        
     except Exception as e:
-        st.error(f"❌ Error al realizar la predicción: {str(e)}")
-        st.write("Detalles técnicos del error:")
-        st.code(str(e), language='python')
+        st.error("Ocurrió un error al realizar la predicción")
+        st.error(f"Detalles técnicos: {str(e)}")
+
+# Sección adicional de información
+st.markdown("---")
+st.markdown("""
+**ℹ️ Sobre los modelos:**
+- **Random Forest:** Modelo basado en árboles de decisión, generalmente más preciso pero más complejo.
+- **Kernel Ridge:** Modelo lineal con kernel, más rápido pero a veces menos preciso.
+
+**Recomendación:** Prueba ambos modelos y compara resultados.
+""")
+
 
     
