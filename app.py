@@ -185,3 +185,5 @@ if st.button("🔮 Predecir Precio"):
     except Exception as e:
         st.error(f"❌ Error al predecir: {e}")
 
+
+
