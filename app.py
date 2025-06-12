@@ -120,7 +120,7 @@ import os
 # SOLUCION: Solo incluir los modelos que realmente tienes disponibles
 urls = {
     "Random Forest": "https://drive.google.com/uc?id=1KJxmCMSjv7xJQXKr2h56cTPm-V70Ypo4",
-    "Kernel Ridge": "https://drive.google.com/uc?id=14lNnLrVnYsPsX0dnUt-dXWPt4OWtu-4G"
+    "Kernel Ridge": "https://drive.google.com/uc?id=14lNnLrVnYsPsX0dnUt-dXWPt4OWtu-4G",
     "Gaussian Process": "https://drive.google.com/uc?id=11qBqHZ8In57V6s-tKft44Qo1wqjdiFfT"
 }
 
