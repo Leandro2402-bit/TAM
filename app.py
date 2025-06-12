@@ -119,10 +119,9 @@ import os
 # --- URLS de los modelos en Drive ---
 # SOLUCION: Solo incluir los modelos que realmente tienes disponibles
 urls = {
-    "Random Forest": "https://drive.google.com/uc?id=1Bfmf3toE2-hBNJkzzvks2k7VIeOuoPY7",
-    "Kernel Ridge": "https://drive.google.com/uc?id=1rJqTDNebuv6fOnECRSI_jF4XrdvSr2Nj"
-    # Si tienes el modelo Gaussian Process, agrégalo aquí:
-    # "Gaussian Process": "https://drive.google.com/uc?id=TU_ID_AQUI"
+    "Random Forest": "https://drive.google.com/uc?id=1KJxmCMSjv7xJQXKr2h56cTPm-V70Ypo4",
+    "Kernel Ridge": "https://drive.google.com/uc?id=14lNnLrVnYsPsX0dnUt-dXWPt4OWtu-4G"
+    "Gaussian Process": "https://drive.google.com/uc?id=11qBqHZ8In57V6s-tKft44Qo1wqjdiFfT"
 }
 
 # --- Cargar modelo si no está en disco ---
