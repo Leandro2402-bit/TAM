@@ -1,14 +1,27 @@
 import streamlit as st
+
+# ===================== TÍTULO Y DESCRIPCIÓN =====================
+st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
+
+st.title("🏡 Predicción de Precio de Viviendas - AmesHousing")
+
+st.markdown("""
+Este dashboard presenta un análisis del conjunto de datos *AmesHousing*, utilizado para desarrollar modelos de regresión que predicen el precio de venta de una vivienda.
+
+*Objetivos:*
+- Explorar y procesar los datos.
+- Comparar el rendimiento de diferentes modelos de regresión.
+- Usar un modelo entrenado para realizar predicciones interactivas.
+
+Los tres modelos con mejor rendimiento fueron:
+- 🌲 *Random Forest Regressor*
+- 🧮 *Kernel Ridge Regressor*
+- 🌐 *Gaussian Process Regressor*
+""")
+
 import pandas as pd
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import joblib
-import gdown
-import os
-
-# ===================== CONFIG =====================
-st.set_page_config(page_title="Predicción de Precio de Viviendas - Ames", layout="centered")
 
 # ===================== CARGA DE DATOS =====================
 @st.cache_data
@@ -16,103 +29,161 @@ def cargar_datos():
     url = "https://raw.githubusercontent.com/Leandro2402-bit/TAM/main/AmesHousing.csv"
     return pd.read_csv(url)
 
-df_ames = cargar_datos()
+df = cargar_datos()
 
 # ===================== VISUALIZACIONES =====================
-st.title("🏡 Predicción de Precio de Viviendas - AmesHousing")
-st.subheader("📊 Análisis Exploratorio")
+st.subheader("📊 Análisis Exploratorio de Datos")
 
-# Histograma
+# Histograma de SalePrice
+st.markdown("### Distribución del Precio de Venta")
 fig1, ax1 = plt.subplots()
-sns.histplot(df_ames['SalePrice'], bins=40, kde=True, ax=ax1)
+sns.histplot(df['SalePrice'], bins=40, kde=True, ax=ax1)
 st.pyplot(fig1)
 
-# Heatmap de correlación
-num_df = df_ames.select_dtypes(include=['int64', 'float64'])
+# Mapa de calor de correlación (solo numéricas)
+st.markdown("### Mapa de Correlaciones")
+num_df = df.select_dtypes(include=['int64', 'float64'])
 corr = num_df.corr(numeric_only=True)
 fig2, ax2 = plt.subplots(figsize=(10, 8))
-sns.heatmap(corr, cmap='coolwarm', linewidths=0.5, ax=ax2)
+sns.heatmap(corr, cmap='coolwarm', annot=False, fmt=".2f", linewidths=0.5, ax=ax2)
 st.pyplot(fig2)
 
-st.markdown("**Top 10 variables más correlacionadas con `SalePrice`**")
-top_corr = corr['SalePrice'].drop('SalePrice').abs().nlargest(10)
+# Top 10 variables más correlacionadas con SalePrice
+st.markdown("### Variables Más Correlacionadas con el Precio")
+top_corr = corr['SalePrice'].drop('SalePrice').abs().sort_values(ascending=False).head(10)
 st.bar_chart(top_corr)
 
 # ===================== COMPARACIÓN DE MODELOS =====================
-st.header("📊 Comparación de Modelos")
+
+# Importar pandas para crear tablas
+import pandas as pd
+
+# Mostrar título de la sección
+st.header("📊 Comparación de Modelos de Regresión")
+
+# Crear un diccionario con las métricas de cada modelo (extraídas de tus tablas comparativas)
 metricas_modelos = {
     "Modelo": ["Random Forest", "Kernel Ridge", "Gaussian Process"],
-    "MAE": [15112.41, 16985.84, 16312.68],
-    "RMSE": [23479.05, 24523.56, 24015.44],
-    "R²": [0.9292, 0.9221, 0.9256]
+    "MAE": [15112.41, 16985.84, 16312.68],          # Error absoluto medio
+    "RMSE": [23479.05, 24523.56, 24015.44],         # Raíz del error cuadrático medio
+    "R²": [0.9292, 0.9221, 0.9256]                  # Coeficiente de determinación
 }
-df_metricas = pd.DataFrame(metricas_modelos)
-st.dataframe(df_metricas.style.format({"MAE":"{:,.2f}","RMSE":"{:,.2f}","R²":"{:.4f}"}))
 
-st.subheader("📏 Interpretación de Métricas")
+# Convertir el diccionario en un DataFrame de pandas
+df_metricas = pd.DataFrame(metricas_modelos)
+
+# Mostrar la tabla de métricas en el dashboard
+st.dataframe(df_metricas.style.format({
+    "MAE": "{:,.2f}",
+    "RMSE": "{:,.2f}",
+    "R²": "{:.4f}"
+}))
+
+# ===================== MÉTRICAS DE EVALUACIÓN =====================
+
+# Subtítulo para la nueva sección
+st.subheader("📏 ¿Qué significan las métricas de evaluación?")
+
+# Texto explicativo con Markdown
 st.markdown("""
-- **MAE**: error promedio absoluto.  
-- **RMSE**: penaliza errores grandes.  
-- **R²**: proporción de la variabilidad explicada (“1” = perfecta, “0” = predecir la media).  
+Para evaluar la calidad de los modelos de regresión, se usan estas tres métricas principales:
+
+### 🔢 MAE – Error Absoluto Medio (Mean Absolute Error)
+- Mide el *promedio de los errores absolutos* entre los precios reales y los predichos.
+- *Fácil de interpretar*: un MAE de 15,000 indica un error promedio de $15,000.
+- *No penaliza demasiado los errores grandes*.
+
+### 🔢 RMSE – Raíz del Error Cuadrático Medio (Root Mean Squared Error)
+- Calcula la *raíz cuadrada del promedio de los errores al cuadrado*.
+- Penaliza más los *errores grandes* que el MAE.
+- Si el RMSE es 23,000, en promedio el error es de unos $23,000, con énfasis en errores grandes.
+
+### 📈 R² – Coeficiente de Determinación
+- Mide cuánta *proporción de la variación del precio* puede explicar el modelo.
+- R² = 1.0 → Predicción perfecta.
+- R² = 0.0 → No es mejor que predecir el promedio.
+- R² < 0 → El modelo es peor que adivinar el valor medio.
+
+---
+Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
-# ===================== PREDICCIÓN INTERACTIVA =====================
-st.title("🏠 Predicción Interactiva")
+# ===================== Prediccion interactiva =====================
 
-# URLs de modelos en Drive
+import pandas as pd
+import numpy as np
+import joblib
+import gdown
+import os
+
+# --- URLS de los modelos en Drive ---
 urls = {
     "Random Forest": "https://drive.google.com/file/d/1Bfmf3toE2-hBNJkzzvks2k7VIeOuoPY7/view?usp=sharing",
     "Kernel Ridge": "https://drive.google.com/uc?id=1rJqTDNebuv6fOnECRSI_jF4XrdvSr2Nj"
 }
 
+# --- Cargar modelo si no está en disco ---
 def load_model(model_name, url):
-    fn = model_name.replace(" ", "_") + ".pkl"
-    if not os.path.exists(fn):
-        gdown.download(url, fn, quiet=False)
-    return joblib.load(fn)
+    filename = f"{model_name.replace(' ', '_')}.pkl"
+    if not os.path.exists(filename):
+        gdown.download(url, filename, quiet=False)
+    return joblib.load(filename)
 
-modelo_seleccionado = st.selectbox("🔍 Elige modelo:", list(urls.keys()))
+# --- Selección de modelo ---
+st.title("🏠 Predicción de Precios de Vivienda - AmesHousing")
+modelo_seleccionado = st.selectbox("🔍 Selecciona un modelo para predecir:", list(urls.keys()))
 modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
 
-# Definición de campos con rango válido
-campos = {
-    "Overall Qual": {"tipo":"slider","min":1,"max":10,"rec":"Calidad general del material"},
-    "Gr Liv Area": {"tipo":"number","min":300,"max":5000,"rec":"Área habitable (pies²)"},
-    "Garage Cars": {"tipo":"slider","min":0,"max":4,"rec":"Coches en garaje"},
-    "Total Bsmt SF": {"tipo":"number","min":0,"max":3000,"rec":"Área sótano (pies²)"},
-    "Year Built": {"tipo":"number","min":1870,"max":2025,"rec":"Año de construcción"},
-    "Full Bath": {"tipo":"slider","min":0,"max":4,"rec":"Baños completos"},
-    "1st Flr SF": {"tipo":"number","min":300,"max":3000,"rec":"Área primer piso (pies²)"},
-    "Garage Area": {"tipo":"number","min":0,"max":1500,"rec":"Área garaje (pies²)"},
-    "Kitchen Qual": {"tipo":"select","opciones":["Ex","Gd","TA","Fa","Po"],"rec":"Calidad cocina"},
-    "Neighborhood": {"tipo":"select","opciones":["NridgHt","CollgCr","Crawfor","Somerst","OldTown","Mitchel","NWAmes","Sawyer"],"rec":"Vecindario"}
+# --- Lista de campos importantes a mostrar ---
+campos_clave = {
+    "Overall Qual": {"tipo": "slider", "min": 1, "max": 10, "recomendacion": "Calidad general del material y acabado"},
+    "Gr Liv Area": {"tipo": "number", "recomendacion": "Área habitable sobre el nivel del suelo (en pies²)"},
+    "Garage Cars": {"tipo": "slider", "min": 0, "max": 4, "recomendacion": "Número de carros que caben en el garaje"},
+    "Total Bsmt SF": {"tipo": "number", "recomendacion": "Área total del sótano (en pies²)"},
+    "Year Built": {"tipo": "number", "recomendacion": "Año de construcción de la casa"},
+    "Full Bath": {"tipo": "slider", "min": 0, "max": 4, "recomendacion": "Número de baños completos"},
+    "1st Flr SF": {"tipo": "number", "recomendacion": "Área del primer piso (en pies²)"},
+    "Garage Area": {"tipo": "number", "recomendacion": "Área del garaje (en pies²)"},
+    "Kitchen Qual": {
+        "tipo": "select",
+        "opciones": ["Ex", "Gd", "TA", "Fa", "Po"],
+        "recomendacion": "Calidad de la cocina (Ex: Excelente, Gd: Buena, TA: Típica, Fa: Regular, Po: Pobre)"
+    },
+    "Neighborhood": {
+        "tipo": "select",
+        "opciones": ["NridgHt", "CollgCr", "Crawfor", "Somerst", "OldTown", "Mitchel", "NWAmes", "Sawyer"],
+        "recomendacion": "Vecindario donde está ubicada la casa"
+    }
 }
 
-st.markdown("### 📝 Ingresa datos de la vivienda")
+# --- Recolección de inputs amigables ---
+st.markdown("### 📝 Ingresa los datos principales de la vivienda")
 input_data = {}
-for campo, cfg in campos.items():
-    st.markdown(f"**{campo}** — _{cfg['rec']}_")
-    if cfg["tipo"] == "slider":
-        input_data[campo] = st.slider(campo, cfg["min"], cfg["max"], cfg["min"])
-    elif cfg["tipo"] == "number":
-        input_data[campo] = st.number_input(campo, cfg["min"], cfg["max"], cfg["min"], step=10)
-    elif cfg["tipo"] == "select":
-        input_data[campo] = st.selectbox(campo, cfg["opciones"])
+for campo, config in campos_clave.items():
+    st.markdown(f"**{campo}** — _{config['recomendacion']}_")
+
+    if config["tipo"] == "slider":
+        input_data[campo] = st.slider(f"Selecciona valor para {campo}", min_value=config["min"], max_value=config["max"], value=config["min"])
+    elif config["tipo"] == "number":
+        input_data[campo] = st.number_input(f"Ingresa valor para {campo}", min_value=0, step=10)
+    elif config["tipo"] == "select":
+        input_data[campo] = st.selectbox(f"Selecciona opción para {campo}", config["opciones"])
     st.markdown("---")
 
+# --- Botón de predicción ---
 if st.button("🔮 Predecir Precio"):
-    df_input = pd.DataFrame([input_data])
-    df_input = pd.get_dummies(df_input)
-    for feat in modelo.feature_names_in_:
-        if feat not in df_input.columns:
-            df_input[feat] = 0
-    df_input = df_input[modelo.feature_names_in_]
     try:
-        pred = modelo.predict(df_input)[0]
+        df = pd.DataFrame([input_data])
+        # Completamos el resto de columnas que espera el modelo con ceros o valores nulos
+        for col in modelo.feature_names_in_:
+            if col not in df.columns:
+                df[col] = 0
+        df = df[modelo.feature_names_in_]  # Asegurar el orden correcto
+
+        pred = modelo.predict(df)[0]
         st.success(f"💵 Precio estimado: ${pred:,.2f}")
-        st.info("Este precio se basa solo en los parámetros ingresados y puede variar por otros factores.")
     except Exception as e:
-        st.error(f"❌ No se pudo predecir: {e}")
+        st.error(f"❌ Error al predecir: {e}")
 
 
 
