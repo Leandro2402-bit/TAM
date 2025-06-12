@@ -61,7 +61,7 @@ st.title("🏠 Predicción Interactiva")
 
 # URLs de modelos en Drive
 urls = {
-    "Random Forest": "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35",
+    "Random Forest": "https://drive.google.com/file/d/1Bfmf3toE2-hBNJkzzvks2k7VIeOuoPY7/view?usp=sharing",
     "Kernel Ridge": "https://drive.google.com/uc?id=1rJqTDNebuv6fOnECRSI_jF4XrdvSr2Nj"
 }
 
