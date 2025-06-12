@@ -105,7 +105,7 @@ Para evaluar la calidad de los modelos de regresión, se usan estas tres métric
 - R² < 0 → El modelo es peor que adivinar el valor medio.
 
 ---
-Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
+Estas métricas permiten entender si el modelo predice bien y en qué magnitud se equivoca.
 """)
 
 # ===================== Prediccion interactiva =====================
@@ -117,9 +117,12 @@ import gdown
 import os
 
 # --- URLS de los modelos en Drive ---
+# SOLUCION: Solo incluir los modelos que realmente tienes disponibles
 urls = {
-    "Random Forest": "https://drive.google.com/file/d/1Bfmf3toE2-hBNJkzzvks2k7VIeOuoPY7/view?usp=sharing",
+    "Random Forest": "https://drive.google.com/uc?id=1tDd35bq8W_MoL5UabRR29esliSANYw35",
     "Kernel Ridge": "https://drive.google.com/uc?id=1rJqTDNebuv6fOnECRSI_jF4XrdvSr2Nj"
+    # Si tienes el modelo Gaussian Process, agrégalo aquí:
+    # "Gaussian Process": "https://drive.google.com/uc?id=TU_ID_AQUI"
 }
 
 # --- Cargar modelo si no está en disco ---
@@ -131,8 +134,23 @@ def load_model(model_name, url):
 
 # --- Selección de modelo ---
 st.title("🏠 Predicción de Precios de Vivienda - AmesHousing")
+
+# SOLUCION: Agregar validación y mensaje informativo
+st.info("📍 **Modelos disponibles para predicción:** Random Forest y Kernel Ridge")
+
 modelo_seleccionado = st.selectbox("🔍 Selecciona un modelo para predecir:", list(urls.keys()))
-modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
+
+# SOLUCION: Validar que el modelo existe antes de cargarlo
+if modelo_seleccionado in urls:
+    try:
+        modelo = load_model(modelo_seleccionado, urls[modelo_seleccionado])
+        st.success(f"✅ Modelo '{modelo_seleccionado}' cargado exitosamente")
+    except Exception as e:
+        st.error(f"❌ Error al cargar el modelo '{modelo_seleccionado}': {str(e)}")
+        st.stop()
+else:
+    st.error(f"❌ El modelo '{modelo_seleccionado}' no está disponible")
+    st.stop()
 
 # --- Lista de campos importantes a mostrar ---
 campos_clave = {
@@ -173,17 +191,25 @@ for campo, config in campos_clave.items():
 # --- Botón de predicción ---
 if st.button("🔮 Predecir Precio"):
     try:
-        df = pd.DataFrame([input_data])
-        # Completamos el resto de columnas que espera el modelo con ceros o valores nulos
-        for col in modelo.feature_names_in_:
-            if col not in df.columns:
-                df[col] = 0
-        df = df[modelo.feature_names_in_]  # Asegurar el orden correcto
-
-        pred = modelo.predict(df)[0]
-        st.success(f"💵 Precio estimado: ${pred:,.2f}")
+        df_pred = pd.DataFrame([input_data])
+        
+        # SOLUCION: Mejor manejo de features faltantes
+        if hasattr(modelo, 'feature_names_in_'):
+            # Completamos el resto de columnas que espera el modelo con ceros o valores nulos
+            for col in modelo.feature_names_in_:
+                if col not in df_pred.columns:
+                    df_pred[col] = 0
+            df_pred = df_pred[modelo.feature_names_in_]  # Asegurar el orden correcto
+        
+        pred = modelo.predict(df_pred)[0]
+        st.success(f"💵 **Precio estimado con {modelo_seleccionado}:** ${pred:,.2f}")
+        
+        # Información adicional
+        st.info(f"📊 Esta predicción fue realizada usando el modelo **{modelo_seleccionado}**")
+        
     except Exception as e:
-        st.error(f"❌ Error al predecir: {e}")
+        st.error(f"❌ Error al predecir: {str(e)}")
+        st.error("🔍 Verifica que todos los campos estén completos y sean válidos")
 
 
 
